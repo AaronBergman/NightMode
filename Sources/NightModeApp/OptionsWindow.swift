@@ -129,7 +129,7 @@ struct StatusHeader: View {
     }
 
     private var levelColor: Color {
-        if model.isOff || model.displayedLevel < Level.offThreshold { return .secondary }
+        if model.isOff { return .secondary }
         return Color(nsColor: IconRenderer.tintColor(level: model.displayedLevel, dark: colorScheme == .dark))
     }
 }

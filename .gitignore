@@ -9,6 +9,7 @@ DerivedData/
 .DS_Store
 .claude/
 backup_v1/
+backup_v2.0.0/
 HANDOFF.md
 CLAUDE.md
 .swiftpm/

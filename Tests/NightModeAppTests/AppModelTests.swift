@@ -148,17 +148,40 @@ final class AppModelTests: XCTestCase {
 }
 
 final class IconTests: XCTestCase {
-    func testTintColorsGetRedderAndStayOpaque() {
-        var lastHue = 1.0
-        for level in stride(from: 1.0, through: 100, by: 9) {
+    func testTintColorsComeFromThePaletteAndStayOpaque() {
+        for level in stride(from: 0.0, through: 100, by: 5) {
             for dark in [false, true] {
-                let color = IconRenderer.tintColor(level: level, dark: dark).usingColorSpace(.deviceRGB)!
+                let color = IconRenderer.tintColor(level: level, dark: dark)
+                let expected = WarmthPalette.srgb(level: level, on: dark ? .dark : .light)
+                XCTAssertEqual(color.colorSpace, .sRGB)
                 XCTAssertEqual(color.alphaComponent, 1)
-                if dark { XCTAssertLessThanOrEqual(color.hueComponent, lastHue + 1e-9); lastHue = color.hueComponent }
+                XCTAssertEqual(color.redComponent, expected.r, accuracy: 1e-6)
+                XCTAssertEqual(color.greenComponent, expected.g, accuracy: 1e-6)
+                XCTAssertEqual(color.blueComponent, expected.b, accuracy: 1e-6)
             }
         }
-        XCTAssertTrue(IconRenderer.image(level: 0, off: false).isTemplate, "0% uses the plain template glyph")
-        XCTAssertFalse(IconRenderer.image(level: 30, off: false).isTemplate, "tinted above 0%")
-        XCTAssertTrue(IconRenderer.image(level: 30, off: true).isTemplate, "off uses the plain glyph")
+        // 0% on a dark bar is the same white a template icon renders, so 0% to 1% is not a jump.
+        let white = IconRenderer.tintColor(level: 0, dark: true)
+        XCTAssertEqual(white.redComponent + white.greenComponent + white.blueComponent, 3, accuracy: 1e-6)
+    }
+
+    func testSameGlyphAtEveryLevelAndOutlineOnlyWhenOff() {
+        XCTAssertFalse(IconRenderer.image(level: 0, off: false).isTemplate, "0% draws the same filled glyph as 1%")
+        XCTAssertFalse(IconRenderer.image(level: 1, off: false).isTemplate)
+        XCTAssertFalse(IconRenderer.image(level: 100, off: false).isTemplate)
+        XCTAssertTrue(IconRenderer.image(level: 30, off: true).isTemplate, "off uses the plain outline")
+    }
+
+    func testDynamicColorFollowsAppearance() {
+        let dynamic = IconRenderer.dynamicTintColor(level: 60)
+        for (name, dark) in [(NSAppearance.Name.darkAqua, true), (.aqua, false)] {
+            var resolved: NSColor?
+            NSAppearance(named: name)!.performAsCurrentDrawingAppearance {
+                resolved = dynamic.usingColorSpace(.sRGB)
+            }
+            let expected = WarmthPalette.srgb(level: 60, on: dark ? .dark : .light)
+            XCTAssertEqual(resolved!.redComponent, expected.r, accuracy: 1e-3, "\(name)")
+            XCTAssertEqual(resolved!.blueComponent, expected.b, accuracy: 1e-3, "\(name)")
+        }
     }
 }

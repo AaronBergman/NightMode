@@ -136,8 +136,8 @@ public final class ControlPanelView: NSView {
             readout.textColor = .secondaryLabelColor
         } else {
             readout.stringValue = Level.format(model.displayedLevel)
-            let dark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            readout.textColor = model.displayedLevel < Level.offThreshold ? .labelColor : IconRenderer.tintColor(level: model.displayedLevel, dark: dark)
+            // Same color as the menu bar icon, including 0% (plain white or black), so nothing jumps at 1%.
+            readout.textColor = IconRenderer.tintColor(level: model.displayedLevel, dark: IconRenderer.isDark(effectiveAppearance))
         }
         let enabled = model.backend.isAvailable
         for control in [slider, presets, powerSwitch] as [NSControl] + nudgeButtons { control.isEnabled = enabled }

@@ -32,7 +32,7 @@ struct GeneralTab: View {
             Section("Menu bar") {
                 Toggle("Show the percentage next to the icon",
                        isOn: Binding(get: { prefs.showPercentInMenuBar }, set: { v in model.updatePreferences { $0.showPercentInMenuBar = v } }))
-                Text("The icon is tinted with an exaggerated version of the current tint: amber at low levels, deep red-orange at 100%, plain outline when off. A small dot means automation is paused.")
+                Text("The icon shows the warmth Night Shift is adding, exaggerated so it reads at menu bar size: white at 0%, warming through cream and peach to candlelight amber at 100% (black to dark amber on a light menu bar), in evenly sized steps. A plain outline means NightMode is off; a small dot means automation is paused.")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

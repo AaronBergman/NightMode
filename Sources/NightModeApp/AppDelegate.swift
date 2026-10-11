@@ -28,12 +28,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBar: MenuBarController?
     private var options: OptionsWindowController?
     private let hotKeys = HotKeyCenter()
+    private var terminationSignal: DispatchSourceSignal?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if anotherInstanceIsRunning() {
             NSApp.terminate(nil)
             return
         }
+        // Quit cleanly on SIGTERM (`kill`, `pkill`, update scripts): finish any fade and save, like Quit does.
+        signal(SIGTERM, SIG_IGN)
+        let termination = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
+        termination.setEventHandler { NSApp.terminate(nil) }
+        termination.resume()
+        terminationSignal = termination
+
         let loginItems = SystemLoginItem()
         let store = StateStore()
         let firstRun = store.load() == nil && !Self.hasLegacyInstall()

@@ -189,9 +189,11 @@ public final class MenuBarController: NSObject, NSMenuDelegate {
         guard key != lastIconKey else { return }
         lastIconKey = key
         button.image = IconRenderer.image(level: level, off: off, paused: paused)
-        if showPercent {
-            button.title = off ? "" : " \(Level.format(level))"
-            button.font = .monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        if showPercent && !off {
+            button.attributedTitle = NSAttributedString(string: " \(Level.format(level))", attributes: [
+                .font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular),
+                .foregroundColor: IconRenderer.dynamicTintColor(level: level),
+            ])
         } else {
             button.title = ""
         }

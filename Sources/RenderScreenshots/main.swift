@@ -215,42 +215,48 @@ final class MenuMock: NSView {
 // MARK: - Icon strip
 
 func iconStrip() -> NSBitmapImageRep {
-    let levels: [Double] = [0, 5, 15, 30, 50, 70, 85, 100]
-    let cell: CGFloat = 64
-    let size = NSSize(width: CGFloat(levels.count) * cell, height: 92)
-    let scale: CGFloat = 2
+    // nil = NightMode switched off (outline glyph).
+    let levels: [Double?] = [nil, 0, 1, 2, 5, 10, 25, 50, 75, 100]
+    let cell: CGFloat = 52
+    let bar: CGFloat = 30
+    let size = NSSize(width: CGFloat(levels.count) * cell, height: 2 * bar + 26)
+    let scale: CGFloat = 3
     let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(size.width * scale), pixelsHigh: Int(size.height * scale),
                                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
                                colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
     rep.size = size
     NSGraphicsContext.saveGraphicsState()
     NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-    for (row, dark) in [(0, true), (1, false)] {
-        let y = CGFloat(row) * 30 + 26
-        (dark ? NSColor(white: 0.14, alpha: 1) : NSColor(white: 0.95, alpha: 1)).setFill()
-        NSRect(x: 0, y: y, width: size.width, height: 30).fill()
+    NSColor.white.setFill()
+    NSRect(origin: .zero, size: size).fill()
+    for (row, dark) in [(0, false), (1, true)] {
+        let y = 26 + CGFloat(row) * bar
+        (dark ? NSColor(white: 0.14, alpha: 1) : NSColor(white: 0.93, alpha: 1)).setFill()
+        NSRect(x: 0, y: y, width: size.width, height: bar).fill()
         for (i, level) in levels.enumerated() {
-            let icon = IconRenderer.image(level: level, off: false)
+            let icon = IconRenderer.image(level: level ?? 0, off: level == nil)
+            let rect = NSRect(x: CGFloat(i) * cell + (cell - icon.size.width) / 2, y: y + (bar - icon.size.height) / 2,
+                              width: icon.size.width, height: icon.size.height)
             NSAppearance(named: dark ? .darkAqua : .aqua)!.performAsCurrentDrawingAppearance {
                 if icon.isTemplate {
+                    // How the menu bar renders a template image: plain white or black.
                     let tinted = icon.copy() as! NSImage
                     tinted.lockFocus()
-                    (dark ? NSColor.white : NSColor.black).set()
+                    IconRenderer.tintColor(level: 0, dark: dark).set()
                     NSRect(origin: .zero, size: tinted.size).fill(using: .sourceAtop)
                     tinted.unlockFocus()
-                    tinted.draw(in: NSRect(x: CGFloat(i) * cell + (cell - icon.size.width) / 2, y: y + (30 - icon.size.height) / 2,
-                                           width: icon.size.width, height: icon.size.height))
+                    tinted.draw(in: rect)
                 } else {
-                    icon.draw(in: NSRect(x: CGFloat(i) * cell + (cell - icon.size.width) / 2, y: y + (30 - icon.size.height) / 2,
-                                         width: icon.size.width, height: icon.size.height))
+                    icon.draw(in: rect)
                 }
             }
         }
     }
     for (i, level) in levels.enumerated() {
-        let label = NSAttributedString(string: "\(Int(level))%", attributes: [.font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium),
-                                                                             .foregroundColor: NSColor(white: 0.45, alpha: 1)])
-        label.draw(at: NSPoint(x: CGFloat(i) * cell + (cell - label.size().width) / 2, y: 5))
+        let text = level.map { "\(Int($0))%" } ?? "off"
+        let label = NSAttributedString(string: text, attributes: [.font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium),
+                                                                 .foregroundColor: NSColor(white: 0.42, alpha: 1)])
+        label.draw(at: NSPoint(x: CGFloat(i) * cell + (cell - label.size().width) / 2, y: 6))
     }
     NSGraphicsContext.restoreGraphicsState()
     return rep

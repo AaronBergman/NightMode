@@ -11,7 +11,7 @@ A small macOS menu bar app for precise control of Night Shift: exact levels, qui
 ## What it does
 
 - **Precise level control from the menu bar.** A slider, one-click levels (0, 25, 50, 75, 100%), and -5 / -1 / +1 / +5 buttons that keep the menu open so you can tap them repeatedly. The exact percentage is always shown.
-- **An icon that shows the level at a glance.** The menu bar icon takes on an exaggerated version of the current tint: plain outline when off, amber at low levels, deep red-orange at 100%. It adapts to light and dark menu bars. A small dot means automation is paused by a manual change.
+- **An icon that shows the warmth being added.** The menu bar icon and the big percentage readout are colored with the white point Night Shift is producing, exaggerated so it reads at menu bar size: white at 0%, warming through cream and peach to candlelight amber at 100%, with every 1% step the same visible size. On a light menu bar the same hues run from black to dark amber. A plain outline means NightMode is off; a small dot means automation is paused by a manual change.
 - **Gradual ramps.** "From the current level to 100% over 30 minutes", "from 20% to 80% over 2 hours starting at 21:00", or a quick fade out. Ramps follow the clock, so they keep their place through sleep, restarts and quitting.
 - **Daily schedules with gradual changes.** For example: start warming at 20:00, reach 40% by 21:00, 70% by 23:00, and clear back to 0% by 07:30. Changes can be tied to a clock time or to sunset and sunrise (with an offset), and limited to certain weekdays. A chart shows the whole day.
 - **Tint as a function of brightness.** The dimmer the screen, the warmer the tint, using a curve you can edit. With automatic brightness on, this effectively follows the light in your room.
@@ -88,9 +88,13 @@ They work in any app and need no special permissions. You can turn them off in D
 
 ## The menu bar icon
 
-<p align="center"><img src="docs/images/icon-levels.png" width="512" alt="The icon at 0, 5, 15, 30, 50, 70, 85 and 100 percent on dark and light menu bars"></p>
+<p align="center"><img src="docs/images/icon-levels.png" width="640" alt="The icon when off and at 0, 1, 2, 5, 10, 25, 50, 75 and 100 percent on dark and light menu bars"></p>
 
-Optionally, NightMode can also show the percentage next to the icon (Dynamic Options > General).
+The color is meant to feel like the warmth itself, just stronger. Each level's color is a point on the Planckian locus (the colors of a glowing blackbody, which is the path Night Shift moves your screen along), running from neutral 6500 K at 0% toward about 2230 K at 100%. That is Night Shift's real range (6000 K to 2700 K) exaggerated 1.45 times in mireds, so a shift that is gentle across a whole screen still shows on a small glyph.
+
+The levels are spaced by how different they look (equal distances in the OKLab color space), so 0% to 1% is exactly as visible as 1% to 2% or 99% to 100%. That means the low end changes slowly: 5% is only a hint of cream. On a light menu bar the same hues run from template black to a dark amber that keeps at least 3.8:1 contrast with the bar. The filled icon is drawn the same way at every level, including 0%; only "off" uses the outline.
+
+Optionally, NightMode can also show the percentage next to the icon, in the same color (Dynamic Options > General).
 
 ## FAQ
 
@@ -124,7 +128,7 @@ Optionally, NightMode can also show the percentage next to the icon (Dynamic Opt
 The package targets Swift 5.9 and macOS 13 and has no third-party dependencies. It is built and tested with Xcode 27 (Swift 6.4); older Xcode versions may work but are untested.
 
 ```sh
-swift test                      # unit tests: ramps, schedules, solar maths, brightness curves, precedence, app behavior
+swift test                      # unit tests: ramps, schedules, solar maths, brightness curves, precedence, icon colors, app behavior
 scripts/build.sh                # builds build/NightMode.app (universal); signs with your Developer ID if you have one, else ad hoc
 open build/NightMode.app
 swift run RenderScreenshots     # regenerates the images in docs/images, offscreen, with a mock Night Shift
@@ -137,6 +141,10 @@ The code is split into `NightModeCore` (pure logic with no AppKit: ramps, schedu
 ## Upgrading from NightMode 1.x
 
 Version 2 migrates automatically: it keeps your current Night Shift level, moves the menu bar icon to the same position, replaces the old LaunchAgent with a normal login item (the old plist goes to the Trash), and quits a running 1.x copy so the two never fight.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
