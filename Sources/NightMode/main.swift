@@ -1,0 +1,2 @@
+import NightModeApp
+NightModeMain.run()

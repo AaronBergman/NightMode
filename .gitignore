@@ -1,0 +1,14 @@
+# Build output
+.build/
+build/
+dist/
+DerivedData/
+*.dmg
+*.zip
+# Local only
+.DS_Store
+.claude/
+backup_v1/
+HANDOFF.md
+CLAUDE.md
+.swiftpm/
